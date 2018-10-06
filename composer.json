@@ -1,0 +1,40 @@
+{
+    "name": "rollerworks/route-autofill-bundle",
+    "type": "symfony-bundle",
+    "description": "RouteAutofillBundle can auto-fill missing missing route-parameters when generating",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sebastiaan Stok",
+            "email": "s.stok@rollerscapes.net"
+        }
+    ],
+    "require": {
+        "php": "^7.1",
+        "symfony/framework-bundle": "^4.1",
+        "symfony/routing": "^4.1.6"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.2.7",
+        "symfony/phpunit-bridge": "^4.1"
+    },
+    "config": {
+        "preferred-install": {
+            "*": "dist"
+        },
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "Rollerworks\\Bundle\\RouteAutofillBundle\\": "src"
+        },
+        "exclude-from-classmap": [
+            "tests/"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Rollerworks\\Bundle\\RouteAutofillBundle\\Tests\\": "tests"
+        }
+    }
+}

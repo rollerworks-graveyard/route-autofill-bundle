@@ -1,10 +1,13 @@
 parameters:
     autoload_files:
         - vendor/autoload.php
+    excludes_analyse:
+        - vendor/
+        - %currentWorkingDirectory%/tests/**
 
     ignoreErrors:
         # Tests
-        - '#Call to an undefined method Prophecy\\Prophecy\\ObjectProphecy::[a-zA-Z0-9_]+\(\)#'
+        #- '#Call to an undefined method Prophecy\\Prophecy\\ObjectProphecy::[a-zA-Z0-9_]+\(\)#'
         #- '#Access to an undefined property Prophecy\\Prophecy\\ObjectProphecy::\$[a-zA-Z0-9_]+#'
         #- '#Call to an undefined method PHPUnit_Framework_MockObject_MockObject::[a-zA-Z0-9_]+\(\)#'
         #- '#expects\s+[^\s]+, PHPUnit_Framework_MockObject_MockObject(\[\])? given#'

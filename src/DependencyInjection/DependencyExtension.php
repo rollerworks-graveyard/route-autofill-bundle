@@ -41,7 +41,8 @@ final class DependencyExtension extends Extension
 
         $container->register(RouteRedirectResponseListener::class)
             ->addTag('kernel.event_subscriber')
-            ->addArgument(new Reference(AutoFilledUrlGenerator::class));
+            ->addArgument(new Reference(AutoFilledUrlGenerator::class))
+            ->addArgument(new Reference('session'));
     }
 
     public function getAlias(): string

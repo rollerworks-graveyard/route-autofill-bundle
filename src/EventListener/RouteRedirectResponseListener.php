@@ -16,6 +16,8 @@ namespace Rollerworks\Bundle\RouteAutofillBundle\EventListener;
 use Rollerworks\Bundle\RouteAutofillBundle\Response\RouteRedirectResponse;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Event\GetResponseForControllerResultEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -24,9 +26,13 @@ final class RouteRedirectResponseListener implements EventSubscriberInterface
 {
     private $urlGenerator;
 
-    public function __construct(UrlGeneratorInterface $urlGenerator)
+    /** @var SessionInterface|Session */
+    private $session;
+
+    public function __construct(UrlGeneratorInterface $urlGenerator, SessionInterface $session)
     {
         $this->urlGenerator = $urlGenerator;
+        $this->session = $session;
     }
 
     public function onKernelView(GetResponseForControllerResultEvent $event): void
@@ -35,6 +41,19 @@ final class RouteRedirectResponseListener implements EventSubscriberInterface
 
         if (!$result instanceof RouteRedirectResponse) {
             return;
+        }
+
+        $flashes = $result->getFlashes();
+
+        if (\count($flashes) > 0 && method_exists($this->session, 'getFlashBag')) {
+            $flashBag = $this->session->getFlashBag();
+
+            foreach ($flashes as $flash) {
+                $flashBag->add($flash[0], null === $flash[2] ? $flash[1] : [
+                    'message' => $flash[1],
+                    'parameters' => $flash[2],
+                ]);
+            }
         }
 
         $event->setResponse(

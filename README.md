@@ -43,7 +43,6 @@ This command requires you to have Composer installed globally, as explained
 in the [installation chapter](https://getcomposer.org/doc/00-intro.md)
 of the Composer documentation.
 
-
 Basic usage
 -----------
 
@@ -59,7 +58,7 @@ Secondly, you need to set the `autofill_variables` option for your routes
 to enable the auto-filling of specific parameters.
 
 **Caution:** This option must be set per route, provide either an array or
-string with named separated by a `,` (`account,id`).
+a string with named separated by a `,` (`account,id`).
 
 ### RouteRedirectResponse
 
@@ -73,9 +72,26 @@ use Rollerworks\Bundle\RouteAutofillBundle\Response\RouteRedirectResponse;
 return new RouteRedirectResponse('route-name');
 ```
 
-That's it. 
+That's it.
+
+#### Flash messages
+
+Additionally you can add [flash messages][0] directly at the response.
+
+```php
+return RouteRedirectResponse::toRoute('route-name')
+    ->withFlash('success', 'translation.id', 'arguments');
+```
+
+When the arguments are empty (null) the message is past added to FlashBag as a string, 
+otherwise it's an array like `['message' => 'message.id' => ['id' => 200]]`.
+
+Translations and special formatting must still be done in the template.
+The `withFlash()` method can be called multiple times if needed.
 
 License
 -------
 
 All contents of this package are released under the [MIT license](LICENSE).
+
+[0]: https://symfony.com/doc/current/controller.html#flash-messages

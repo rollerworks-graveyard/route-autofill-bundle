@@ -19,6 +19,9 @@ use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBag;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\HttpKernel\Event\GetResponseForControllerResultEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -29,57 +32,21 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 final class RouteRedirectResponseListenerTest extends TestCase
 {
     /** @test */
-    public function it_ignores_other_responses()
+    public function it_ignores_other_responses(): void
     {
         $urlGeneratorProphecy = $this->prophesize(UrlGeneratorInterface::class);
         $urlGeneratorProphecy->generate(Argument::any())->shouldNotBeCalled();
         $urlGenerator = $urlGeneratorProphecy->reveal();
 
-        $listener = new RouteRedirectResponseListener($urlGenerator);
+        $session = $this->createNotUsedSession();
+
+        $listener = new RouteRedirectResponseListener($urlGenerator, $session);
         $event = $this->createEvent(false);
 
         $listener->onKernelView($event);
 
         self::assertFalse($event->hasResponse());
         self::assertFalse($event->isPropagationStopped());
-    }
-
-    /** @test */
-    public function it_sets_a_redirect_response()
-    {
-        $urlGeneratorProphecy = $this->prophesize(UrlGeneratorInterface::class);
-        $urlGeneratorProphecy
-            ->generate('foobar', ['he' => 'bar'])
-            ->willReturn('https://park-manager.com/webhosting');
-        $urlGenerator = $urlGeneratorProphecy->reveal();
-
-        $listener = new RouteRedirectResponseListener($urlGenerator);
-        $event = $this->createEvent(new RouteRedirectResponse('foobar', ['he' => 'bar']));
-
-        $listener->onKernelView($event);
-
-        $this->assertResponseIsRedirect($event->getResponse(), 'https://park-manager.com/webhosting');
-    }
-
-    /** @test */
-    public function it_sets_a_redirect_response_with_custom_status()
-    {
-        $urlGeneratorProphecy = $this->prophesize(UrlGeneratorInterface::class);
-        $urlGeneratorProphecy
-            ->generate('foobar', ['he' => 'bar'])
-            ->willReturn('https://park-manager.com/webhosting');
-        $urlGenerator = $urlGeneratorProphecy->reveal();
-
-        $listener = new RouteRedirectResponseListener($urlGenerator);
-        $event = $this->createEvent(RouteRedirectResponse::permanent('foobar', ['he' => 'bar']));
-
-        $listener->onKernelView($event);
-
-        $this->assertResponseIsRedirect(
-            $event->getResponse(),
-            'https://park-manager.com/webhosting',
-            RedirectResponse::HTTP_MOVED_PERMANENTLY
-        );
     }
 
     private function createEvent($result): GetResponseForControllerResultEvent
@@ -99,4 +66,124 @@ final class RouteRedirectResponseListenerTest extends TestCase
         self::assertEquals($expectedTargetUrl, $response->getTargetUrl());
         self::assertEquals($expectedStatus, $response->getStatusCode());
     }
+
+    private function createNotUsedSession(): SessionWithFlashes
+    {
+        $sessionProphecy = $this->prophesize(SessionWithFlashes::class);
+        $sessionProphecy->start()->shouldNotBeCalled();
+        $sessionProphecy->getFlashBag()->shouldNotBeCalled();
+
+        return $sessionProphecy->reveal();
+    }
+
+    /** @test */
+    public function it_sets_a_redirect_response(): void
+    {
+        $urlGeneratorProphecy = $this->prophesize(UrlGeneratorInterface::class);
+        $urlGeneratorProphecy
+            ->generate('foobar', ['he' => 'bar'])
+            ->willReturn('https://park-manager.com/webhosting');
+        $urlGenerator = $urlGeneratorProphecy->reveal();
+
+        $session = $this->createNotUsedSession();
+
+        $listener = new RouteRedirectResponseListener($urlGenerator, $session);
+        $event = $this->createEvent(new RouteRedirectResponse('foobar', ['he' => 'bar']));
+
+        $listener->onKernelView($event);
+
+        $this->assertResponseIsRedirect($event->getResponse(), 'https://park-manager.com/webhosting');
+    }
+
+    /** @test */
+    public function it_sets_a_redirect_response_with_custom_status(): void
+    {
+        $urlGeneratorProphecy = $this->prophesize(UrlGeneratorInterface::class);
+        $urlGeneratorProphecy
+            ->generate('foobar', ['he' => 'bar'])
+            ->willReturn('https://park-manager.com/webhosting');
+        $urlGenerator = $urlGeneratorProphecy->reveal();
+
+        $session = $this->createNotUsedSession();
+
+        $listener = new RouteRedirectResponseListener($urlGenerator, $session);
+        $event = $this->createEvent(RouteRedirectResponse::permanent('foobar', ['he' => 'bar']));
+
+        $listener->onKernelView($event);
+
+        $this->assertResponseIsRedirect(
+            $event->getResponse(),
+            'https://park-manager.com/webhosting',
+            RedirectResponse::HTTP_MOVED_PERMANENTLY
+        );
+    }
+
+    /** @test */
+    public function it_sets_a_redirect_response_and_handles_flashes(): void
+    {
+        $urlGeneratorProphecy = $this->prophesize(UrlGeneratorInterface::class);
+        $urlGeneratorProphecy
+            ->generate('foobar', ['he' => 'bar'])
+            ->willReturn('https://park-manager.com/webhosting');
+        $urlGenerator = $urlGeneratorProphecy->reveal();
+
+        $session = $this->createSessionHandlerWithFlashes();
+
+        $listener = new RouteRedirectResponseListener($urlGenerator, $session);
+        $event = $this->createEvent(
+            RouteRedirectResponse::toRoute('foobar', ['he' => 'bar'])
+                ->withFlash('success', 'Perfect {id}', ['id' => 200])
+                ->withFlash('error', 'Bag of cash gone')
+        );
+
+        $listener->onKernelView($event);
+
+        $this->assertResponseIsRedirect($event->getResponse(), 'https://park-manager.com/webhosting');
+        self::assertEquals(
+            [
+                'success' => [
+                    ['message' => 'Perfect {id}', 'parameters' => ['id' => 200]],
+                ],
+                'error' => ['Bag of cash gone'],
+            ],
+            $session->getFlashBag()->peekAll()
+        );
+    }
+
+    /** @test */
+    public function it_sets_a_redirect_response_and_ignores_flashes_if_not_supported(): void
+    {
+        $urlGeneratorProphecy = $this->prophesize(UrlGeneratorInterface::class);
+        $urlGeneratorProphecy
+            ->generate('foobar', ['he' => 'bar'])
+            ->willReturn('https://park-manager.com/webhosting');
+        $urlGenerator = $urlGeneratorProphecy->reveal();
+
+        $sessionProphecy = $this->prophesize(SessionInterface::class);
+        $session = $sessionProphecy->reveal();
+
+        $listener = new RouteRedirectResponseListener($urlGenerator, $session);
+        $event = $this->createEvent(
+            RouteRedirectResponse::toRoute('foobar', ['he' => 'bar'])
+                ->withFlash('success', 'Perfect {id}', ['id' => 200])
+                ->withFlash('error', 'Bag of cash gone')
+        );
+
+        $listener->onKernelView($event);
+
+        $this->assertResponseIsRedirect($event->getResponse(), 'https://park-manager.com/webhosting');
+    }
+
+    private function createSessionHandlerWithFlashes(): SessionWithFlashes
+    {
+        $sessionProphecy = $this->prophesize(SessionWithFlashes::class);
+        $sessionProphecy->getFlashBag()->willReturn(new FlashBag());
+
+        return $sessionProphecy->reveal();
+    }
+}
+
+interface SessionWithFlashes extends SessionInterface
+{
+    public function getFlashBag(): FlashBagInterface;
 }

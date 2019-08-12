@@ -20,12 +20,18 @@ class RouteRedirectResponse
     protected $route;
     protected $parameters = [];
     protected $status = 302;
+    protected $flashes = [];
 
     public function __construct(string $route, array $parameters = [], int $status = 302)
     {
         $this->route = $route;
         $this->parameters = $parameters;
         $this->status = $status;
+    }
+
+    public static function toRoute(string $route, array $parameters = [])
+    {
+        return new static($route, $parameters);
     }
 
     public static function permanent(string $route, array $parameters = [])
@@ -46,5 +52,17 @@ class RouteRedirectResponse
     public function getStatus(): int
     {
         return $this->status;
+    }
+
+    public function withFlash(string $type, string $message, ?array $arguments = null)
+    {
+        $this->flashes[] = [$type, $message, $arguments];
+
+        return $this;
+    }
+
+    public function getFlashes(): array
+    {
+        return $this->flashes;
     }
 }

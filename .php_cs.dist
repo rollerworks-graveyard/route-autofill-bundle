@@ -24,5 +24,6 @@ return PhpCsFixer\Config::create()
     ->setFinder(
         PhpCsFixer\Finder::create()
             ->in([__DIR__.'/src', __DIR__.'/tests'])
+            ->notName('route_autofill_mapping.php')
     )
 ;

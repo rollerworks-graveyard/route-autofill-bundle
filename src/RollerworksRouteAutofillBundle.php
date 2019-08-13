@@ -16,7 +16,7 @@ namespace Rollerworks\Bundle\RouteAutofillBundle;
 use Rollerworks\Bundle\RouteAutofillBundle\DependencyInjection\DependencyExtension;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
-class RollerworksRouteAutofillBundle extends Bundle
+final class RollerworksRouteAutofillBundle extends Bundle
 {
     public function getContainerExtension(): DependencyExtension
     {

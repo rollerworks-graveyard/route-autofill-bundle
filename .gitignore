@@ -3,3 +3,5 @@ phpunit.xml
 .php_cs.cache
 tests/CacheWarmer/route_autofill_mapping.php
 composer.lock
+/symfony.lock
+.phpunit.result.cache

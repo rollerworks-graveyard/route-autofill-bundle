@@ -13,12 +13,12 @@ declare(strict_types=1);
 
 namespace Rollerworks\Bundle\RouteAutofillBundle\CacheWarmer;
 
+use function array_fill_keys;
+use function sprintf;
 use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmer;
 use Symfony\Component\Routing\CompiledRoute;
 use Symfony\Component\Routing\Route;
 use Symfony\Component\Routing\RouterInterface;
-use function array_fill_keys;
-use function sprintf;
 use function var_export;
 
 final class RouteRedirectMappingWarmer extends CacheWarmer

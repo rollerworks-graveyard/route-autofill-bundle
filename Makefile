@@ -1,4 +1,4 @@
-QA_DOCKER_IMAGE=jakzal/phpqa:1.23-alpine
+QA_DOCKER_IMAGE=jakzal/phpqa:1.25.0-php7.3-alpine
 QA_DOCKER_COMMAND=docker run -it --rm -v "$(shell pwd):/project" -w /project ${QA_DOCKER_IMAGE}
 
 ci: cs-full-check phpstan

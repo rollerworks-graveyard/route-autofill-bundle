@@ -13,16 +13,16 @@ declare(strict_types=1);
 
 namespace Rollerworks\Bundle\RouteAutofillBundle\Tests\EventListener;
 
-use Rollerworks\Bundle\RouteAutofillBundle\EventListener\RouteRedirectResponseListener;
-use Rollerworks\Bundle\RouteAutofillBundle\Response\RouteRedirectResponse;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
+use Rollerworks\Bundle\RouteAutofillBundle\EventListener\RouteRedirectResponseListener;
+use Rollerworks\Bundle\RouteAutofillBundle\Response\RouteRedirectResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBag;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Symfony\Component\HttpKernel\Event\GetResponseForControllerResultEvent;
+use Symfony\Component\HttpKernel\Event\ViewEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -49,9 +49,9 @@ final class RouteRedirectResponseListenerTest extends TestCase
         self::assertFalse($event->isPropagationStopped());
     }
 
-    private function createEvent($result): GetResponseForControllerResultEvent
+    private function createEvent($result): ViewEvent
     {
-        return new GetResponseForControllerResultEvent(
+        return new ViewEvent(
             $this->createMock(HttpKernelInterface::class),
             new Request(),
             HttpKernelInterface::MASTER_REQUEST,

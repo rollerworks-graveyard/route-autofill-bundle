@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Rollerworks\Bundle\RouteAutofillBundle\Tests;
 
+use PHPUnit\Framework\TestCase;
 use Rollerworks\Bundle\RouteAutofillBundle\AutoFilledUrlGenerator;
 use Rollerworks\Bundle\RouteAutofillBundle\MappingFileLoader;
-use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;

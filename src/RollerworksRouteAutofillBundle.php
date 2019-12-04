@@ -14,11 +14,12 @@ declare(strict_types=1);
 namespace Rollerworks\Bundle\RouteAutofillBundle;
 
 use Rollerworks\Bundle\RouteAutofillBundle\DependencyInjection\DependencyExtension;
+use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 final class RollerworksRouteAutofillBundle extends Bundle
 {
-    public function getContainerExtension(): DependencyExtension
+    public function getContainerExtension(): ?ExtensionInterface
     {
         if (null === $this->extension) {
             $this->extension = new DependencyExtension();
